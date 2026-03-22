@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Lumina RP — Dev Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#08080f;--surface:#0f0f1a;--card:#141425;--border:#1e1e35;--border2:#2a2a45;--accent:#7c3aed;--accent2:#a855f7;--neon:#c084fc;--cyan:#22d3ee;--gold:#fbbf24;--red:#f87171;--green:#4ade80;--orange:#fb923c;--text:#e2e8f0;--muted:#64748b;--muted2:#94a3b8;--sidebar-w:240px;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;display:flex;overflow:hidden;}
+#sidebar{width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;flex-shrink:0;overflow-y:auto;position:relative;z-index:10;}
+#sidebar::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--neon),var(--cyan));}
+.brand{padding:20px 16px 16px;border-bottom:1px solid var(--border);}
+.brand-logo{display:flex;align-items:center;gap:10px;}
+.logo-img{width:36px;height:36px;object-fit:contain;flex-shrink:0;filter:drop-shadow(0 0 8px rgba(168,85,247,0.5));}
+.brand-text{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:#fff;letter-spacing:0.02em;}
+.brand-sub{font-size:10px;color:var(--accent2);font-family:'JetBrains Mono',monospace;letter-spacing:0.1em;}
+.nav-section-label{font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);padding:14px 16px 6px;font-family:'JetBrains Mono',monospace;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 14px;cursor:pointer;font-size:13px;color:var(--muted2);transition:all 0.15s;border-left:2px solid transparent;user-select:none;}
+.nav-item:hover{color:var(--text);background:rgba(124,58,237,0.08);}
+.nav-item.active{color:var(--neon);background:rgba(124,58,237,0.15);border-left-color:var(--accent2);}
+.nav-item .icon{font-size:14px;width:18px;text-align:center;}
+.status-dot{width:6px;height:6px;border-radius:50%;background:var(--green);margin-left:auto;box-shadow:0 0 6px var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.sidebar-footer{margin-top:auto;padding:12px 16px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+#main{flex:1;overflow-y:auto;height:100vh;}
+.page{display:none;padding:0 0 80px;animation:fadeIn 0.2s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.page-header{padding:36px 48px 24px;border-bottom:1px solid var(--border);background:linear-gradient(to bottom,rgba(124,58,237,0.04),transparent);position:sticky;top:0;z-index:5;backdrop-filter:blur(12px);}
+.page-emoji{font-size:32px;margin-bottom:8px;}
+.page-title{font-family:'Syne',sans-serif;font-weight:800;font-size:28px;color:#fff;letter-spacing:-0.02em;}
+.page-desc{color:var(--muted2);font-size:13px;margin-top:4px;}
+.content{padding:28px 48px;}
+.section-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent2);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+.quick-links{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:32px;}
+.ql-btn{display:flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--border2);color:var(--muted2);font-size:12px;padding:7px 14px;border-radius:6px;cursor:pointer;transition:all 0.2s;font-family:'DM Sans',sans-serif;}
+.ql-btn:hover{border-color:var(--accent2);color:var(--neon);background:rgba(124,58,237,0.1);}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:4px;font-size:11px;font-weight:500;border:1px solid;white-space:nowrap;cursor:pointer;user-select:none;}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;}
+.bg{color:#4ade80;border-color:rgba(74,222,128,0.3);background:rgba(74,222,128,0.08);}
+.br{color:#f87171;border-color:rgba(248,113,113,0.3);background:rgba(248,113,113,0.08);}
+.by{color:#fbbf24;border-color:rgba(251,191,36,0.3);background:rgba(251,191,36,0.08);}
+.bb{color:#60a5fa;border-color:rgba(96,165,250,0.3);background:rgba(96,165,250,0.08);}
+.bp{color:#c084fc;border-color:rgba(192,132,252,0.3);background:rgba(192,132,252,0.08);}
+.bo{color:#fb923c;border-color:rgba(251,146,60,0.3);background:rgba(251,146,60,0.08);}
+.bx{color:#94a3b8;border-color:#2a2a45;background:#0f0f1a;}
+.db-wrap{background:var(--card);border:1px solid var(--border2);border-radius:10px;overflow:hidden;margin-bottom:28px;}
+.db-toolbar{padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border2);background:var(--surface);}
+.db-toolbar-label{font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;flex:1;}
+.db-view-btn{padding:4px 10px;border-radius:4px;font-size:11px;border:1px solid var(--border2);background:transparent;color:var(--muted2);cursor:pointer;transition:all 0.15s;font-family:'DM Sans',sans-serif;}
+.db-view-btn.on,.db-view-btn:hover{background:rgba(124,58,237,0.2);border-color:var(--accent);color:var(--neon);}
+.db-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+.db-table th{text-align:left;padding:9px 14px;color:var(--muted);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;font-family:'JetBrains Mono',monospace;border-bottom:1px solid var(--border2);background:var(--surface);font-weight:400;}
+.db-table td{padding:8px 14px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle;}
+.db-table tr:hover td{background:rgba(124,58,237,0.035);}
+.db-table td.fn{color:#fff;font-weight:500;}
+.editable{outline:none;cursor:text;border-radius:4px;padding:2px 5px;transition:background 0.15s;display:inline-block;min-width:30px;max-width:220px;}
+.editable:hover{background:rgba(124,58,237,0.1);}
+.editable:focus{background:rgba(124,58,237,0.18);box-shadow:0 0 0 1px var(--accent);}
+.editable:empty:before{content:attr(data-ph);color:var(--muted);font-style:italic;}
+.add-row-btn{display:flex;align-items:center;gap:6px;padding:9px 14px;font-size:12px;color:var(--muted);cursor:pointer;border-top:1px solid var(--border);transition:all 0.15s;background:transparent;width:100%;text-align:left;border:none;border-top:1px solid var(--border);}
+.add-row-btn:hover{color:var(--accent2);background:rgba(124,58,237,0.05);}
+.del-btn{opacity:0;cursor:pointer;color:var(--red);font-size:15px;padding:1px 6px;border-radius:3px;transition:all 0.15s;background:transparent;border:none;line-height:1;}
+tr:hover .del-btn{opacity:0.5;}
+.del-btn:hover{opacity:1!important;background:rgba(248,113,113,0.1);}
+#selectPopup{position:fixed;z-index:9999;background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:6px;min-width:150px;box-shadow:0 8px 32px rgba(0,0,0,0.7);display:none;}
+#selectPopup.open{display:block;}
+.select-opt{padding:6px 10px;border-radius:5px;cursor:pointer;font-size:12px;transition:background 0.1s;}
+.select-opt:hover{background:rgba(124,58,237,0.15);}
+.kanban{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.kanban-col{background:var(--card);border:1px solid var(--border2);border-radius:10px;overflow:hidden;}
+.kcol-hdr{padding:12px 14px;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;letter-spacing:0.05em;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:8px;}
+.kcol-hdr .cnt{margin-left:auto;background:var(--surface);padding:2px 8px;border-radius:10px;font-size:11px;color:var(--muted2);font-weight:400;}
+.col-todo .kcol-hdr{color:var(--muted2);border-top:2px solid var(--border2);}
+.col-prog .kcol-hdr{color:var(--gold);border-top:2px solid var(--gold);}
+.col-done2 .kcol-hdr{color:var(--green);border-top:2px solid var(--green);}
+.kcards{padding:10px;display:flex;flex-direction:column;gap:8px;min-height:80px;}
+.kcard{background:var(--surface);border:1px solid var(--border2);border-radius:7px;padding:10px 12px;font-size:12px;cursor:default;transition:all 0.15s;}
+.kcard:hover{border-color:var(--accent);box-shadow:0 0 10px rgba(124,58,237,0.18);}
+.kcard-title{color:var(--text);font-weight:500;margin-bottom:6px;}
+.kcard-meta{display:flex;gap:6px;flex-wrap:wrap;}
+.focus-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-left:3px solid var(--accent);background:rgba(124,58,237,0.06);border-radius:0 6px 6px 0;margin-bottom:8px;}
+.focus-inp{flex:1;outline:none;background:transparent;border:none;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;}
+.focus-inp::placeholder{color:var(--muted);}
+.fdot{color:var(--accent2);font-size:12px;}
+.focus-del{opacity:0;cursor:pointer;color:var(--red);font-size:16px;background:none;border:none;padding:0 2px;line-height:1;transition:opacity 0.15s;}
+.focus-item:hover .focus-del{opacity:0.5;}
+.focus-del:hover{opacity:1!important;}
+.add-btn{display:flex;align-items:center;gap:8px;padding:8px 14px;font-size:12px;color:var(--muted);cursor:pointer;border:1px dashed var(--border2);border-radius:6px;background:transparent;transition:all 0.15s;margin-top:4px;width:auto;}
+.add-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+.notes-area{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;resize:vertical;min-height:100px;outline:none;transition:border-color 0.15s;line-height:1.7;white-space:pre-wrap;}
+.notes-area:focus{border-color:var(--accent);}
+.notes-area:empty:before{content:attr(data-ph);color:var(--muted);font-style:italic;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.info-card{background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:18px;}
+.info-card h3{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#fff;margin-bottom:10px;}
+.roadmap-section{background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:18px;margin-bottom:14px;}
+.roadmap-section h3{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:12px;}
+.roadmap-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);}
+.roadmap-item:last-of-type{border:none;}
+.rcheck{width:16px;height:16px;border-radius:4px;border:1px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;cursor:pointer;transition:all 0.15s;}
+.rcheck:hover{border-color:var(--accent2);}
+.rcheck.done{background:var(--accent);border-color:var(--accent);color:#fff;}
+.rinp{flex:1;outline:none;background:transparent;border:none;color:var(--muted2);font-size:12.5px;font-family:'DM Sans',sans-serif;}
+.rinp:focus{color:var(--text);}
+.server-info{background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:20px;display:flex;align-items:center;gap:16px;margin-bottom:20px;}
+.sdot{width:12px;height:12px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:pulse 2s infinite;}
+.slabel{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--green);}
+.sip{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);outline:none;}
+.sip:focus{color:var(--text);}
+code{font-family:'JetBrains Mono',monospace;font-size:11px;background:rgba(124,58,237,0.15);color:var(--neon);padding:2px 7px;border-radius:4px;border:1px solid rgba(168,85,247,0.2);}
+#toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--accent);color:var(--neon);font-size:12px;padding:10px 16px;border-radius:8px;font-family:'JetBrains Mono',monospace;z-index:9999;opacity:0;transform:translateY(8px);transition:all 0.25s;pointer-events:none;}
+#toast.show{opacity:1;transform:translateY(0);}
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:var(--accent);}
+.sug-form{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:20px;margin-bottom:28px;}
+.sug-form-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:14px;}
+.sug-fields{display:grid;grid-template-columns:160px 1fr auto;gap:10px;align-items:end;}
+.sug-col{display:flex;flex-direction:column;gap:5px;}
+.sug-field-label{font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;letter-spacing:0.08em;text-transform:uppercase;}
+.sug-input{background:var(--surface);border:1px solid var(--border2);border-radius:7px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color 0.15s;width:100%;}
+.sug-input:focus{border-color:var(--accent);}
+.sug-input::placeholder{color:var(--muted);}
+.sug-submit{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:7px;padding:10px 20px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;transition:opacity 0.15s;align-self:flex-end;}
+.sug-submit:hover{opacity:0.85;}
+.highlighted-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-bottom:8px;}
+.sug-card-hl{background:linear-gradient(135deg,rgba(124,58,237,0.16),rgba(192,132,252,0.06));border:1px solid rgba(168,85,247,0.4);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden;}
+.sug-card-hl::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--neon));}
+.sug-card-hl .hl-star{position:absolute;top:14px;right:14px;font-size:15px;}
+.sug-card-hl .hl-author{font-size:10px;color:var(--neon);font-family:'JetBrains Mono',monospace;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;}
+.sug-card-hl .hl-text{font-size:13px;color:var(--text);line-height:1.6;font-weight:500;padding-right:24px;}
+.sug-card-hl .hl-remove{margin-top:12px;background:transparent;border:1px solid rgba(168,85,247,0.3);border-radius:5px;padding:4px 10px;font-size:11px;color:var(--neon);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;}
+.sug-card-hl .hl-remove:hover{background:rgba(124,58,237,0.2);}
+.sug-list{display:flex;flex-direction:column;gap:10px;}
+.sug-card{background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;display:flex;gap:14px;align-items:flex-start;transition:border-color 0.15s;}
+.sug-card.is-hl{border-color:rgba(168,85,247,0.3);background:rgba(124,58,237,0.05);}
+.sug-card-body{flex:1;min-width:0;}
+.sug-card-author{font-size:10px;color:var(--accent2);font-family:'JetBrains Mono',monospace;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;}
+.sug-card-text{font-size:13px;color:var(--text);line-height:1.6;}
+.sug-card-date{font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:5px;}
+.sug-card-btns{display:flex;flex-direction:column;gap:6px;flex-shrink:0;}
+.hl-btn{background:transparent;border:1px solid var(--border2);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:14px;transition:all 0.15s;line-height:1;color:var(--muted);}
+.hl-btn:hover,.hl-btn.on{border-color:var(--gold);color:var(--gold);background:rgba(251,191,36,0.1);}
+.sug-del-btn{background:transparent;border:1px solid var(--border2);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:12px;transition:all 0.15s;line-height:1;color:var(--muted);}
+.sug-del-btn:hover{border-color:var(--red);color:var(--red);background:rgba(248,113,113,0.08);}
+.empty-msg{text-align:center;padding:36px;color:var(--muted);font-size:13px;}
+.empty-msg .ei{font-size:28px;opacity:0.4;margin-bottom:8px;}
+</style>
+</head>
+<body>
+<div id="selectPopup"></div>
+<div id="toast">Saved ✓</div>
+
+<nav id="sidebar">
+  <div class="brand"><div class="brand-logo"><img src="logo.png" alt="Lumina RP" class="logo-img"/><div><div class="brand-text">LUMINA RP</div><div class="brand-sub">DEV HUB</div></div></div></div>
+  <div class="nav-section-label">Core</div>
+  <div class="nav-item active" onclick="go('hub')"><span class="icon">🏠</span>Dev Hub<div class="status-dot"></div></div>
+  <div class="nav-item" onclick="go('tasks')"><span class="icon">✅</span>Weekly Tasks</div>
+  <div class="nav-item" onclick="go('roadmap')"><span class="icon">📆</span>Monthly Roadmap</div>
+  <div class="nav-item" onclick="go('patches')"><span class="icon">📝</span>Patch Notes</div>
+  <div class="nav-item" onclick="go('changelog')"><span class="icon">🔍</span>Dev Change Log</div>
+  <div class="nav-item" onclick="go('bugs')"><span class="icon">🐞</span>Bug Tracker</div>
+  <div class="nav-section-label">Systems</div>
+  <div class="nav-item" onclick="go('commands')"><span class="icon">🎮</span>Commands</div>
+  <div class="nav-item" onclick="go('robbery')"><span class="icon">🏴‍☠️</span>Robbery Systems</div>
+  <div class="nav-item" onclick="go('gangs')"><span class="icon">👥</span>Gangs</div>
+  <div class="nav-item" onclick="go('businesses')"><span class="icon">🏢</span>Businesses</div>
+  <div class="nav-item" onclick="go('police')"><span class="icon">🚔</span>Police System</div>
+  <div class="nav-item" onclick="go('ems')"><span class="icon">🚑</span>EMS System</div>
+  <div class="nav-item" onclick="go('drugs')"><span class="icon">💊</span>Drug System</div>
+  <div class="nav-section-label">Dev Tools</div>
+  <div class="nav-item" onclick="go('luminadev')"><span class="icon">🧪</span>LuminaDEV</div>
+  <div class="nav-item" onclick="go('suggestions')"><span class="icon">💡</span>Suggestions</div>
+  <div class="sidebar-footer">v1.0 · Lumina RP Team</div>
+</nav>
+
+<main id="main">
+
+<!-- HUB -->
+<div id="page-hub" class="page active">
+  <div class="page-header"><div class="page-emoji">🏠</div><div class="page-title">Lumina RP Dev Hub</div><div class="page-desc">Central command for the development team — stay organized, ship better.</div></div>
+  <div class="content">
+    <div class="section-label">Quick Links</div>
+    <div class="quick-links">
+      <div class="ql-btn" onclick="go('tasks')">✅ Weekly Tasks</div>
+      <div class="ql-btn" onclick="go('roadmap')">📆 Monthly Roadmap</div>
+      <div class="ql-btn" onclick="go('patches')">📝 Patch Notes</div>
+      <div class="ql-btn" onclick="go('changelog')">🔍 Dev Change Log</div>
+      <div class="ql-btn" onclick="go('bugs')">🐞 Bug Tracker</div>
+      <div class="ql-btn" onclick="go('commands')">🎮 Commands</div>
+      <div class="ql-btn" onclick="go('luminadev')">🧪 LuminaDEV</div>
+      <div class="ql-btn" onclick="go('suggestions')">💡 Suggestions</div>
+    </div>
+    <div class="section-label">System Status Board</div>
+    <div class="db-wrap"><div class="db-toolbar"><span class="db-toolbar-label">⊞ Table · Systems</span></div><table class="db-table"><thead><tr><th>System</th><th>Status</th><th>Priority</th><th>Assigned</th><th>Notes</th><th style="width:32px"></th></tr></thead><tbody id="hub-body"></tbody></table><button class="add-row-btn" onclick="addRow('hub')">＋ Add system</button></div>
+    <div class="section-label">Current Focus</div>
+    <div id="focus-list"></div>
+    <button class="add-btn" onclick="addFocus()">＋ Add focus item</button>
+  </div>
+</div>
+
+<!-- TASKS -->
+<div id="page-tasks" class="page">
+  <div class="page-header"><div class="page-emoji">✅</div><div class="page-title">Weekly Tasks</div><div class="page-desc">Track what the team is working on right now.</div></div>
+  <div class="content">
+    <div style="display:flex;gap:8px;margin-bottom:20px">
+      <button class="db-view-btn on" id="tbtn" onclick="setTaskView('table')">☰ Table</button>
+      <button class="db-view-btn" id="kbtn" onclick="setTaskView('kanban')">⬜ Kanban</button>
+    </div>
+    <div id="tasks-tbl-view">
+      <div class="db-wrap"><div class="db-toolbar"><span class="db-toolbar-label">⊞ Table · Weekly Tasks</span></div><table class="db-table"><thead><tr><th>Task</th><th>Status</th><th>Priority</th><th>Category</th><th>Assigned</th><th>Due Date</th><th>Notes</th><th style="width:32px"></th></tr></thead><tbody id="tasks-body"></tbody></table><button class="add-row-btn" onclick="addRow('tasks')">＋ Add task</button></div>
+    </div>
+    <div id="tasks-kan-view" style="display:none">
+      <div class="kanban">
+        <div class="kanban-col col-todo"><div class="kcol-hdr">To Do <span class="cnt" id="kc-todo">0</span></div><div class="kcards" id="kl-todo"></div></div>
+        <div class="kanban-col col-prog"><div class="kcol-hdr">In Progress <span class="cnt" id="kc-prog">0</span></div><div class="kcards" id="kl-prog"></div></div>
+        <div class="kanban-col col-done2"><div class="kcol-hdr">Done <span class="cnt" id="kc-done">0</span></div><div class="kcards" id="kl-done"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ROADMAP -->
+<div id="page-roadmap" class="page">
+  <div class="page-header"><div class="page-emoji">📆</div><div class="page-title">Monthly Roadmap</div><div class="page-desc">Click items to check them off. Click text to edit. Add new items freely.</div></div>
+  <div class="content" id="roadmap-content"></div>
+</div>
+
+<!-- PATCHES -->
+<div id="page-patches" class="page">
+  <div class="page-header"><div class="page-emoji">📝</div><div class="page-title">Patch Notes <span style="font-size:14px;color:var(--accent2);font-family:'JetBrains Mono',monospace;font-weight:400">PUBLIC</span></div><div class="page-desc">Changes visible to the community.</div></div>
+  <div class="content"><div class="db-wrap"><div class="db-toolbar"><span class="db-toolbar-label">⊞ Table · Patch Notes</span></div><table class="db-table"><thead><tr><th>Update Title</th><th>Date</th><th>Type</th><th>Description</th><th style="width:32px"></th></tr></thead><tbody id="patches-body"></tbody></table><button class="add-row-btn" onclick="addRow('patches')">＋ New patch note</button></div></div>
+</div>
+
+<!-- CHANGELOG -->
+<div id="page-changelog" class="page">
+  <div class="page-header"><div class="page-emoji">🔍</div><div class="page-title">Dev Change Log <span style="font-size:14px;color:var(--red);font-family:'JetBrains Mono',monospace;font-weight:400">CRITICAL</span></div><div class="page-desc">Your "what broke everything" tracker — log every change made.</div></div>
+  <div class="content"><div class="db-wrap"><div class="db-toolbar"><span class="db-toolbar-label">⊞ Table · Change Log</span></div><table class="db-table"><thead><tr><th>Date</th><th>System</th><th>Change Made</th><th>File Edited</th><th>Notes</th><th style="width:32px"></th></tr></thead><tbody id="changelog-body"></tbody></table><button class="add-row-btn" onclick="addRow('changelog')">＋ Log a change</button></div></div>
+</div>
+
+<!-- BUGS -->
+<div id="page-bugs" class="page">
+  <div class="page-header"><div class="page-emoji">🐞</div><div class="page-title">Bug Tracker</div><div class="page-desc">Report and track bugs until they're squashed.</div></div>
+  <div class="content"><div class="db-wrap"><div class="db-toolbar"><span class="db-toolbar-label">⊞ Table · Bug Tracker</span></div><table class="db-table"><thead><tr><th>Bug Name</th><th>Severity</th><th>Status</th><th>Assigned</th><th>Description</th><th>Steps</th><th>Notes</th><th style="width:32px"></th></tr></thead><tbody id="bugs-body"></tbody></table><button class="add-row-btn" onclick="addRow('bugs')">＋ Report bug</button></div></div>
+</div>
+
+<!-- COMMANDS -->
+<div id="page-commands" class="page">
+  <div class="page-header"><div class="page-emoji">🎮</div><div class="page-title">Commands</div><div class="page-desc">Click any cell to edit. Add new commands with the button below.</div></div>
+  <div class="content"><div class="db-wrap"><div class="db-toolbar"><span class="db-toolbar-label">⊞ Table · Commands</span></div><table class="db-table"><thead><tr><th>Command</th><th>Category</th><th>Description</th><th style="width:32px"></th></tr></thead><tbody id="commands-body"></tbody></table><button class="add-row-btn" onclick="addRow('commands')">＋ Add command</button></div></div>
+</div>
+
+<!-- ROBBERY -->
+<div id="page-robbery" class="page">
+  <div class="page-header"><div class="page-emoji">🏴‍☠️</div><div class="page-title">Robbery Systems</div><div class="page-desc">Every robbery must be documented before going live.</div></div>
+  <div class="content"><div class="db-wrap"><div class="db-toolbar"><span class="db-toolbar-label">⊞ Table · Robbery Systems</span></div><table class="db-table"><thead><tr><th>Robbery Name</th><th>Start Location</th><th>Required Items</th><th>Item Sources</th><th>Reward</th><th>Difficulty</th><th>Status</th><th>Steps</th><th style="width:32px"></th></tr></thead><tbody id="robbery-body"></tbody></table><button class="add-row-btn" onclick="addRow('robbery')">＋ Add robbery</button></div></div>
+</div>
+
+<!-- GANGS -->
+<div id="page-gangs" class="page">
+  <div class="page-header"><div class="page-emoji">👥</div><div class="page-title">Gangs</div><div class="page-desc">Active gangs, territories and activities.</div></div>
+  <div class="content"><div class="db-wrap"><div class="db-toolbar"><span class="db-toolbar-label">⊞ Table · Gangs</span></div><table class="db-table"><thead><tr><th>Gang Name</th><th>Territory</th><th>Income Sources</th><th>Activities</th><th>Requirements</th><th>Status</th><th style="width:32px"></th></tr></thead><tbody id="gangs-body"></tbody></table><button class="add-row-btn" onclick="addRow('gangs')">＋ Add gang</button></div></div>
+</div>
+
+<!-- BUSINESSES -->
+<div id="page-businesses" class="page">
+  <div class="page-header"><div class="page-emoji">🏢</div><div class="page-title">Businesses</div><div class="page-desc">Owned businesses, income methods and staff.</div></div>
+  <div class="content"><div class="db-wrap"><div class="db-toolbar"><span class="db-toolbar-label">⊞ Table · Businesses</span></div><table class="db-table"><thead><tr><th>Business Name</th><th>Owner</th><th>Income Method</th><th>Required Items</th><th>Staff Roles</th><th>Status</th><th style="width:32px"></th></tr></thead><tbody id="businesses-body"></tbody></table><button class="add-row-btn" onclick="addRow('businesses')">＋ Add business</button></div></div>
+</div>
+
+<!-- POLICE -->
+<div id="page-police" class="page">
+  <div class="page-header"><div class="page-emoji">🚔</div><div class="page-title">Police System</div><div class="page-desc">Click any box to edit.</div></div>
+  <div class="content"><div class="grid-2">
+    <div class="info-card"><h3>🚨 Arrest Flow</h3><div class="notes-area" contenteditable="true" data-key="police-arrest" oninput="saveNote(this)" data-ph="Document arrest flow...">1. Initiate traffic stop / pursuit
+2. /cuff suspect
+3. Search via MDT
+4. Issue charges in MDT
+5. Transport to PD holding
+6. Book &amp; process</div></div>
+    <div class="info-card"><h3>💻 MDT</h3><div class="notes-area" contenteditable="true" data-key="police-mdt" oninput="saveNote(this)" data-ph="MDT features...">License plate lookup
+Criminal record search
+Warrant system
+Incident reports
+BOLO system</div></div>
+    <div class="info-card"><h3>🔍 Evidence</h3><div class="notes-area" contenteditable="true" data-key="police-evidence" oninput="saveNote(this)" data-ph="Evidence items...">Fingerprint kit
+Evidence bags
+Camera
+Evidence locker</div></div>
+    <div class="info-card"><h3>🚗 Vehicles &amp; Equipment</h3><div class="notes-area" contenteditable="true" data-key="police-vehicles" oninput="saveNote(this)" data-ph="Vehicles &amp; gear...">Patrol cars, SUVs
+Unmarked units
+Pistol, shotgun, AR
+Taser, cuffs, radio
+Spike strips</div></div>
+  </div></div>
+</div>
+
+<!-- EMS -->
+<div id="page-ems" class="page">
+  <div class="page-header"><div class="page-emoji">🚑</div><div class="page-title">EMS System</div><div class="page-desc">Click any box to edit.</div></div>
+  <div class="content"><div class="grid-2">
+    <div class="info-card"><h3>❤️ Revive Flow</h3><div class="notes-area" contenteditable="true" data-key="ems-revive" oninput="saveNote(this)" data-ph="Revive steps...">1. Respond to 911 / downed player
+2. Assess scene safety
+3. Use medkit to stabilize
+4. Revive or transport to hospital
+5. Issue bill if applicable</div></div>
+    <div class="info-card"><h3>🏥 Hospital</h3><div class="notes-area" contenteditable="true" data-key="ems-hospital" oninput="saveNote(this)" data-ph="Hospital locations...">Sandy Shores Medical Center
+Pillbox Hill Hospital
+Paleto Bay Clinic</div></div>
+    <div class="info-card"><h3>💸 Billing</h3><div class="notes-area" contenteditable="true" data-key="ems-billing" oninput="saveNote(this)" data-ph="Billing rates...">Standard revive: $500
+Hospital transport: $1,500
+Surgery: $3,000</div></div>
+    <div class="info-card"><h3>🧰 Equipment</h3><div class="notes-area" contenteditable="true" data-key="ems-equip" oninput="saveNote(this)" data-ph="Equipment list...">Medkit
+Bandages
+Defibrillator
+Stretcher
+Ambulance</div></div>
+  </div></div>
+</div>
+
+<!-- DRUGS -->
+<div id="page-drugs" class="page">
+  <div class="page-header"><div class="page-emoji">💊</div><div class="page-title">Drug System</div><div class="page-desc">Click any box to edit.</div></div>
+  <div class="content"><div class="grid-2">
+    <div class="info-card"><h3>💊 Drugs</h3><div class="notes-area" contenteditable="true" data-key="drugs-list" oninput="saveNote(this)" data-ph="Drug types...">Weed (Green)
+Cocaine
+Meth
+Heroin
+MDMA</div></div>
+    <div class="info-card"><h3>🧪 Crafting Chain</h3><div class="notes-area" contenteditable="true" data-key="drugs-craft" oninput="saveNote(this)" data-ph="Crafting steps...">Harvest raw material
+Process at lab
+Package into sellable units
+Distribute via network</div></div>
+    <div class="info-card"><h3>📍 Locations</h3><div class="notes-area" contenteditable="true" data-key="drugs-loc" oninput="saveNote(this)" data-ph="Location coords...">Weed farm — Vinewood Hills
+Meth lab — Sandy Shores
+Coke processing — Alamo Sea
+Sell point A — South LS
+Sell point B — Vespucci</div></div>
+    <div class="info-card"><h3>💰 Selling</h3><div class="notes-area" contenteditable="true" data-key="drugs-sell" oninput="saveNote(this)" data-ph="Sell tiers...">Street sell — low risk, low reward
+Gang sell — medium risk, higher reward
+Export sell — high risk, top reward</div></div>
+  </div></div>
+</div>
+
+<!-- LUMINADEV -->
+<div id="page-luminadev" class="page">
+  <div class="page-header"><div class="page-emoji">🧪</div><div class="page-title">LuminaDEV</div><div class="page-desc">Test server — all major installs go here first, always.</div></div>
+  <div class="content">
+    <div class="server-info"><div class="sdot"></div><div><div class="slabel">DEV SERVER ONLINE</div><div class="sip" contenteditable="true" data-key="dev-ip" oninput="saveNote(this)">connect dev.luminarp.gg · Port 30120</div></div></div>
+    <div class="grid-2">
+      <div class="info-card"><h3>🎯 Purpose</h3><div class="notes-area" contenteditable="true" data-key="dev-purpose" oninput="saveNote(this)" data-ph="Purpose...">Test new resource installations
+Debug crashes safely
+Validate config changes
+QA new features before live push</div></div>
+      <div class="info-card"><h3>📋 Dev Rules</h3><div class="notes-area" contenteditable="true" data-key="dev-rules" oninput="saveNote(this)" data-ph="Rules...">No testing on live server — ever
+All major installs must go through LuminaDEV first
+Document every test result in the Change Log
+Wipe LuminaDEV monthly to keep it clean</div></div>
+      <div class="info-card"><h3>🔑 Access</h3><div class="notes-area" contenteditable="true" data-key="dev-access" oninput="saveNote(this)" data-ph="Access info...">Dev team only
+Whitelist required
+No public players
+Steam hex required</div></div>
+      <div class="info-card"><h3>📝 Notes</h3><div class="notes-area" contenteditable="true" data-key="dev-notes" oninput="saveNote(this)" data-ph="Add notes here..."></div></div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<!-- SUGGESTIONS -->
+<div id="page-suggestions" class="page">
+  <div class="page-header"><div class="page-emoji">💡</div><div class="page-title">Suggestions</div><div class="page-desc">Drop an idea. Star the ones worth building. Highlighted suggestions float to the top.</div></div>
+  <div class="content">
+
+    <!-- SUBMIT FORM -->
+    <div class="sug-form">
+      <div class="sug-form-title">＋ Submit a Suggestion</div>
+      <div class="sug-fields">
+        <div class="sug-col">
+          <div class="sug-field-label">Your Name</div>
+          <input id="sug-name" class="sug-input" type="text" placeholder="e.g. Reaper" maxlength="32"/>
+        </div>
+        <div class="sug-col">
+          <div class="sug-field-label">Suggestion</div>
+          <input id="sug-text" class="sug-input" type="text" placeholder="Describe your idea..." maxlength="280"/>
+        </div>
+        <button class="sug-submit" onclick="submitSuggestion()">Submit</button>
+      </div>
+    </div>
+
+    <!-- HIGHLIGHTED -->
+    <div id="hl-section" style="display:none;margin-bottom:32px;">
+      <div class="section-label">⭐ Highlighted Suggestions</div>
+      <div class="highlighted-grid" id="hl-grid"></div>
+    </div>
+
+    <!-- ALL SUGGESTIONS -->
+    <div class="section-label">All Suggestions</div>
+    <div class="sug-list" id="sug-list"></div>
+
+  </div>
+</div>
+
+</main>
+
+<script>
+// ── BADGE CONFIG ──
+const OPTS={
+  status_hub:[{l:'Working',c:'bg'},{l:'In Progress',c:'by'},{l:'Bugged',c:'br'},{l:'Planned',c:'bb'}],
+  status_tasks:[{l:'To Do',c:'bb'},{l:'In Progress',c:'by'},{l:'Done',c:'bg'}],
+  priority:[{l:'High',c:'br'},{l:'Medium',c:'bo'},{l:'Low',c:'bx'}],
+  category:[{l:'UI',c:'bb'},{l:'Vehicles',c:'bo'},{l:'Scripts',c:'bg'},{l:'Economy',c:'by'},{l:'RP Systems',c:'bp'}],
+  type:[{l:'Fix',c:'br'},{l:'Addition',c:'bg'},{l:'Change',c:'by'}],
+  severity:[{l:'High',c:'br'},{l:'Medium',c:'bo'},{l:'Low',c:'bx'}],
+  bug_status:[{l:'Open',c:'bb'},{l:'Fixing',c:'by'},{l:'Fixed',c:'bg'}],
+  cmd_cat:[{l:'Player',c:'bb'},{l:'Vehicle',c:'bo'},{l:'Admin',c:'br'},{l:'EMS',c:'bg'},{l:'Police',c:'bp'}],
+  difficulty:[{l:'Easy',c:'bg'},{l:'Medium',c:'bo'},{l:'Hard',c:'br'}],
+  rob_status:[{l:'Working',c:'bg'},{l:'In Progress',c:'by'},{l:'Planned',c:'bb'}],
+  gang_status:[{l:'Active',c:'bg'},{l:'In Review',c:'by'},{l:'Inactive',c:'bx'}],
+  biz_status:[{l:'Open',c:'bg'},{l:'Closed',c:'br'},{l:'In Progress',c:'by'}],
+};
+
+// ── TABLE SCHEMAS ──
+const SCHEMAS={
+  hub:[
+    {k:'system',label:'System',type:'text',first:true},
+    {k:'status',label:'Status',type:'select',opts:'status_hub'},
+    {k:'priority',label:'Priority',type:'select',opts:'priority'},
+    {k:'assigned',label:'Assigned',type:'text'},
+    {k:'notes',label:'Notes',type:'text'},
+  ],
+  tasks:[
+    {k:'task',label:'Task',type:'text',first:true},
+    {k:'status',label:'Status',type:'select',opts:'status_tasks'},
+    {k:'priority',label:'Priority',type:'select',opts:'priority'},
+    {k:'category',label:'Category',type:'select',opts:'category'},
+    {k:'assigned',label:'Assigned',type:'text'},
+    {k:'due',label:'Due Date',type:'text'},
+    {k:'notes',label:'Notes',type:'text'},
+  ],
+  patches:[
+    {k:'title',label:'Update Title',type:'text',first:true},
+    {k:'date',label:'Date',type:'text'},
+    {k:'type',label:'Type',type:'select',opts:'type'},
+    {k:'desc',label:'Description',type:'text'},
+  ],
+  changelog:[
+    {k:'date',label:'Date',type:'text',first:true},
+    {k:'system',label:'System',type:'text'},
+    {k:'change',label:'Change Made',type:'text'},
+    {k:'file',label:'File Edited',type:'text'},
+    {k:'notes',label:'Notes',type:'text'},
+  ],
+  bugs:[
+    {k:'name',label:'Bug Name',type:'text',first:true},
+    {k:'severity',label:'Severity',type:'select',opts:'severity'},
+    {k:'status',label:'Status',type:'select',opts:'bug_status'},
+    {k:'assigned',label:'Assigned',type:'text'},
+    {k:'desc',label:'Description',type:'text'},
+    {k:'steps',label:'Steps',type:'text'},
+    {k:'notes',label:'Notes',type:'text'},
+  ],
+  commands:[
+    {k:'cmd',label:'Command',type:'text',first:true},
+    {k:'cat',label:'Category',type:'select',opts:'cmd_cat'},
+    {k:'desc',label:'Description',type:'text'},
+  ],
+  robbery:[
+    {k:'name',label:'Robbery Name',type:'text',first:true},
+    {k:'loc',label:'Start Location',type:'text'},
+    {k:'items',label:'Required Items',type:'text'},
+    {k:'sources',label:'Item Sources',type:'text'},
+    {k:'reward',label:'Reward',type:'text'},
+    {k:'diff',label:'Difficulty',type:'select',opts:'difficulty'},
+    {k:'status',label:'Status',type:'select',opts:'rob_status'},
+    {k:'steps',label:'Steps',type:'text'},
+  ],
+  gangs:[
+    {k:'name',label:'Gang Name',type:'text',first:true},
+    {k:'territory',label:'Territory',type:'text'},
+    {k:'income',label:'Income Sources',type:'text'},
+    {k:'activities',label:'Activities',type:'text'},
+    {k:'reqs',label:'Requirements',type:'text'},
+    {k:'status',label:'Status',type:'select',opts:'gang_status'},
+  ],
+  businesses:[
+    {k:'name',label:'Business Name',type:'text',first:true},
+    {k:'owner',label:'Owner',type:'text'},
+    {k:'income',label:'Income Method',type:'text'},
+    {k:'items',label:'Required Items',type:'text'},
+    {k:'staff',label:'Staff Roles',type:'text'},
+    {k:'status',label:'Status',type:'select',opts:'biz_status'},
+  ],
+  deps:[
+    {k:'system',label:'System',type:'text',first:true},
+    {k:'deps',label:'Depends On',type:'text'},
+    {k:'notes',label:'Notes',type:'text'},
+  ],
+};
+const DEFAULTS={
+  hub:[
+    {system:'New Player Flow',status:'In Progress',priority:'High',assigned:'Dev Team',notes:'Respawn bug on first join'},
+    {system:'QS Systems',status:'Bugged',priority:'High',assigned:'',notes:'Instability in qb-core bridge'},
+    {system:'Vehicle Shop',status:'In Progress',priority:'Medium',assigned:'',notes:'Full rebuild underway'},
+    {system:'MDT System',status:'Working',priority:'Low',assigned:'',notes:'Stable'},
+    {system:'Drug Crafting',status:'Working',priority:'Medium',assigned:'',notes:'Needs item check'},
+    {system:'Robbery System',status:'In Progress',priority:'High',assigned:'',notes:'Documenting all active robberies'},
+  ],
+  tasks:[
+    {task:'Fix player spawn bug',status:'In Progress',priority:'High',category:'RP Systems',assigned:'',due:'',notes:'Happens on first join'},
+    {task:'Rebuild vehicle shop UI',status:'To Do',priority:'Medium',category:'Vehicles',assigned:'',due:'',notes:'New layout planned'},
+    {task:'Update loading screen',status:'To Do',priority:'Low',category:'UI',assigned:'',due:'',notes:'Volume issue to fix'},
+    {task:'Document robbery systems',status:'In Progress',priority:'High',category:'RP Systems',assigned:'',due:'',notes:'All active ones'},
+    {task:'QS bridge stability',status:'In Progress',priority:'High',category:'Scripts',assigned:'',due:'',notes:''},
+    {task:'Item audit (crafting/shop/loot)',status:'To Do',priority:'Medium',category:'Economy',assigned:'',due:'',notes:'Check all items exist'},
+    {task:'MDT improvements',status:'Done',priority:'Low',category:'RP Systems',assigned:'',due:'',notes:'Stable & shipped'},
+  ],
+  patches:[
+    {title:'v1.2 — MDT Upgrade',date:'2025-07-14',type:'Addition',desc:'New MDT system with improved search and warrant system'},
+    {title:'v1.1 — Economy Patch',date:'2025-07-07',type:'Change',desc:'Adjusted drug sell prices and job payouts'},
+    {title:'v1.0.3 — Spawn Fix',date:'2025-07-01',type:'Fix',desc:'Fixed duplicate spawn on server rejoin'},
+    {title:'v1.0 — Launch',date:'2025-06-20',type:'Addition',desc:'Lumina RP goes live'},
+  ],
+  changelog:[
+    {date:'2025-07-14',system:'MDT',change:'Added warrant system UI',file:'mdt/client.lua',notes:'Tested on LuminaDEV ✓'},
+    {date:'2025-07-13',system:'QS Bridge',change:'Patched null ref crash',file:'qs-core/shared.lua',notes:'Still monitoring'},
+    {date:'2025-07-10',system:'Vehicle Shop',change:'Removed old qs-vehicleshop',file:'qs-vehicleshop/',notes:'Replaced with custom'},
+  ],
+  bugs:[
+    {name:'Spawn duplicate on rejoin',severity:'High',status:'Fixing',assigned:'',desc:'Player spawns twice on reconnect',steps:'Disconnect & reconnect',notes:'Spawn logic conflict'},
+    {name:'QS null reference crash',severity:'High',status:'Fixing',assigned:'',desc:'Server crashes on QS bridge call',steps:'Open vehicle shop',notes:'Monitoring'},
+    {name:'Loading screen audio loops',severity:'Medium',status:'Open',assigned:'',desc:'Volume resets to 100% on loop',steps:'Wait for 2nd loop',notes:''},
+    {name:'Drug sell NPC missing',severity:'Medium',status:'Fixed',assigned:'',desc:'NPC not spawning at south location',steps:'Go to drug sell point S',notes:'Ped coords fixed'},
+  ],
+  commands:[
+    {cmd:'/handsup',cat:'Player',desc:'Put hands up'},
+    {cmd:'/escort',cat:'Player',desc:'Escort a player'},
+    {cmd:'/cuff',cat:'Police',desc:'Cuff a player'},
+    {cmd:'/engine',cat:'Vehicle',desc:'Toggle engine on/off'},
+    {cmd:'/givekeys',cat:'Vehicle',desc:'Give vehicle keys to another player'},
+    {cmd:'/revive',cat:'Admin',desc:'Revive a downed player'},
+    {cmd:'/car',cat:'Admin',desc:'Spawn a vehicle'},
+    {cmd:'/me',cat:'Player',desc:'Roleplay action text'},
+    {cmd:'/do',cat:'Player',desc:'Scene description'},
+  ],
+  robbery:[
+    {name:'Fleeca Bank',loc:'Sandy Shores',items:'Thermite, Drill',sources:'Crafting',reward:'$15,000–$25,000',diff:'Medium',status:'Working',steps:'Hack panel → drill vault → grab cash'},
+    {name:'Store Robbery',loc:'Various',items:'None',sources:'—',reward:'$500–$2,000',diff:'Easy',status:'Working',steps:'Point gun → open till → flee'},
+    {name:'Paleto Bank',loc:'Paleto Bay',items:'C4, Hack Device',sources:'Crafting / Loot',reward:'$80,000+',diff:'Hard',status:'In Progress',steps:'TBD'},
+  ],
+  gangs:[
+    {name:'The Bloods',territory:'South LS',income:'Drugs, Robbery',activities:'Drug trade, turf wars',reqs:'3 members min',status:'Active'},
+    {name:'Los Santos Cartel',territory:'East LS',income:'Drugs, Arms',activities:'Trafficking, protection',reqs:'5 members min',status:'Active'},
+  ],
+  businesses:[
+    {name:'Lumina Auto',owner:'',income:'Vehicle sales',items:'Car listings',staff:'Salesman, Manager',status:'Open'},
+    {name:'Eclipse Bar',owner:'',income:'Drink sales',items:'Alcohol, Mixers',staff:'Bartender, Bouncer',status:'Open'},
+  ],
+  deps:[
+    {system:'qs-vehicleshop',deps:'vehicles table, qb-core',notes:'Breaking vehicles table breaks shop completely'},
+    {system:'qs-housing',deps:'apartments, player_houses',notes:'Wipe apartments table = all houses lost'},
+    {system:'drug-system',deps:'items table, crafting',notes:'All drug items must exist in items table'},
+    {system:'banking',deps:'player_accounts, economy',notes:'Core dependency — do NOT touch without full backup'},
+  ],
+  focus:['Fix new player flow','Stabilize QS systems','Rebuild vehicle shop','Document all active robbery systems','Audit item existence across crafting / shops / loot'],
+  roadmap:{
+    goals:['Stabilize core server systems for consistent uptime','Document all robbery systems in the tracker','Complete vehicle shop rebuild','Full item audit across all systems','Fix new player onboarding flow'],
+    goalsCheck:[false,true,false,false,false],
+    core:['QS system stabilization','Player spawn fix','MDT polish','System dependency map'],
+    coreCheck:[false,false,true,false],
+    content:['New gang territories','2 new businesses','Loading screen refresh','UI overhaul (HUD)'],
+    contentCheck:[false,false,false,false],
+    economy:['Balance drug economy','Item price audit','Job payout review'],
+    economyCheck:[false,false,false],
+    rp:['Robbery documentation complete','Police <> EMS SOP update','Drug crafting chain audit'],
+    rpCheck:[false,false,false],
+  }
+};
+
+// ── STORAGE ──
+const CACHE={};
+function lsGet(k){if(CACHE[k]!==undefined)return CACHE[k];try{const v=localStorage.getItem('lrp_'+k);CACHE[k]=v?JSON.parse(v):null;return CACHE[k];}catch(e){return null;}}
+function lsSet(k,v){CACHE[k]=v;try{localStorage.setItem('lrp_'+k,JSON.stringify(v));}catch(e){}toast();}
+function getData(k){if(!CACHE[k]){const s=lsGet(k);CACHE[k]=s?s:JSON.parse(JSON.stringify(DEFAULTS[k]||[]));}return CACHE[k];}
+
+// ── TOAST ──
+let _tt;
+function toast(){const t=document.getElementById('toast');t.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),1600);}
+
+// ── SELECT POPUP ──
+let _sc=null,_so=null;
+function openSel(el,optsKey){
+  _sc=el;_so=optsKey;
+  const popup=document.getElementById('selectPopup');
+  const opts=OPTS[optsKey]||[];
+  popup.innerHTML='';
+  opts.forEach(o=>{
+    const d=document.createElement('div');
+    d.className='select-opt';
+    d.innerHTML=`<span class="badge ${o.c}" style="pointer-events:none">${o.l}</span>`;
+    d.onclick=()=>{pickSel(o);};
+    popup.appendChild(d);
+  });
+  const r=el.getBoundingClientRect();
+  popup.style.top=(r.bottom+4)+'px';
+  popup.style.left=r.left+'px';
+  popup.style.display='block';
+}
+function pickSel(o){
+  if(!_sc)return;
+  _sc.className='badge '+o.c;
+  _sc.textContent=o.l;
+  _sc.dataset.val=o.l;
+  document.getElementById('selectPopup').style.display='none';
+  syncFromBadge(_sc);
+  _sc=null;
+}
+document.addEventListener('click',e=>{
+  if(!e.target.classList.contains('badge')&&!e.target.closest('#selectPopup'))
+    document.getElementById('selectPopup').style.display='none';
+});
+
+function syncFromBadge(badge){
+  const tr=badge.closest('tr');if(!tr)return;
+  const tbody=tr.closest('tbody');if(!tbody)return;
+  const key=tbody.dataset.key;
+  if(!key)return;
+  const schema=SCHEMAS[key];
+  const rows=getData(key);
+  const idx=parseInt(tr.dataset.idx);
+  if(!rows[idx])return;
+  schema.forEach((col,ci)=>{
+    const td=tr.children[ci];
+    if(col.type==='select'){const b=td.querySelector('.badge');if(b)rows[idx][col.k]=b.dataset.val||b.textContent;}
+    else{const s=td.querySelector('.editable');if(s)rows[idx][col.k]=s.textContent;}
+  });
+  lsSet(key,rows);
+  if(key==='tasks')renderKanban();
+}
+
+// ── RENDER TABLE ──
+function renderTable(key){
+  const schema=SCHEMAS[key];
+  const tbody=document.getElementById(key+'-body');
+  if(!tbody)return;
+  tbody.dataset.key=key;
+  const rows=getData(key);
+  tbody.innerHTML='';
+  rows.forEach((row,i)=>tbody.appendChild(makeRow(key,schema,row,i)));
+}
+
+function makeRow(key,schema,row,idx){
+  const tr=document.createElement('tr');
+  tr.dataset.idx=idx;
+  schema.forEach((col,ci)=>{
+    const td=document.createElement('td');
+    if(col.first)td.className='fn';
+    if(col.type==='select'){
+      const opts=OPTS[col.opts]||[];
+      const o=opts.find(x=>x.l===row[col.k])||opts[0]||{l:row[col.k]||'—',c:'bx'};
+      const badge=document.createElement('span');
+      badge.className='badge '+o.c;
+      badge.textContent=o.l;
+      badge.dataset.val=o.l;
+      badge.onclick=()=>openSel(badge,col.opts);
+      td.appendChild(badge);
+    } else {
+      const span=document.createElement('span');
+      span.className='editable';
+      span.contentEditable='true';
+      span.dataset.ph=col.label;
+      span.textContent=row[col.k]||'';
+      span.addEventListener('input',()=>syncRow(key,schema,tr,idx));
+      span.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();span.blur();}});
+      td.appendChild(span);
+    }
+    tr.appendChild(td);
+  });
+  const tdDel=document.createElement('td');
+  const btn=document.createElement('button');
+  btn.className='del-btn';btn.textContent='×';btn.title='Delete row';
+  btn.onclick=()=>{
+    const rows=getData(key);rows.splice(parseInt(tr.dataset.idx),1);lsSet(key,rows);
+    renderTable(key);
+    if(key==='tasks')renderKanban();
+  };
+  tdDel.appendChild(btn);tr.appendChild(tdDel);
+  return tr;
+}
+
+function syncRow(key,schema,tr,idx){
+  const rows=getData(key);
+  if(!rows[idx])return;
+  schema.forEach((col,ci)=>{
+    const td=tr.children[ci];
+    if(col.type==='select'){const b=td.querySelector('.badge');if(b)rows[idx][col.k]=b.dataset.val||b.textContent;}
+    else{const s=td.querySelector('.editable');if(s)rows[idx][col.k]=s.textContent;}
+  });
+  lsSet(key,rows);
+  if(key==='tasks')renderKanban();
+}
+
+function addRow(key){
+  const schema=SCHEMAS[key];
+  const rows=getData(key);
+  const blank={};
+  schema.forEach(col=>{
+    blank[col.k]=col.type==='select'?(OPTS[col.opts]&&OPTS[col.opts][0]?OPTS[col.opts][0].l:''):'';
+  });
+  rows.push(blank);lsSet(key,rows);
+  const tbody=document.getElementById(key+'-body');
+  tbody.appendChild(makeRow(key,schema,blank,rows.length-1));
+  const newTr=tbody.lastElementChild;
+  const first=newTr.querySelector('.editable');
+  if(first){first.focus();const r=document.createRange();const s=window.getSelection();r.selectNodeContents(first);r.collapse(false);s.removeAllRanges();s.addRange(r);}
+  if(key==='tasks')renderKanban();
+}
+
+// ── KANBAN ──
+function renderKanban(){
+  const tasks=getData('tasks');
+  const buckets={todo:[],prog:[],done:[]};
+  tasks.forEach(t=>{
+    if(t.status==='Done')buckets.done.push(t);
+    else if(t.status==='In Progress')buckets.prog.push(t);
+    else buckets.todo.push(t);
+  });
+  Object.entries(buckets).forEach(([id,arr])=>{
+    const el=document.getElementById('kl-'+id);
+    const cnt=document.getElementById('kc-'+id);
+    if(!el)return;
+    el.innerHTML='';
+    arr.forEach(t=>{
+      const catO=OPTS.category.find(x=>x.l===t.category)||{c:'bx'};
+      const priO=OPTS.priority.find(x=>x.l===t.priority)||{c:'bx'};
+      const card=document.createElement('div');card.className='kcard';
+      card.innerHTML=`<div class="kcard-title">${t.task||'Untitled'}</div><div class="kcard-meta"><span class="badge ${catO.c}" style="pointer-events:none">${t.category||'—'}</span><span class="badge ${priO.c}" style="pointer-events:none">${t.priority||'—'}</span></div>`;
+      el.appendChild(card);
+    });
+    if(cnt)cnt.textContent=arr.length;
+  });
+}
+
+function setTaskView(v){
+  document.getElementById('tasks-tbl-view').style.display=v==='table'?'':'none';
+  document.getElementById('tasks-kan-view').style.display=v==='kanban'?'':'none';
+  document.getElementById('tbtn').classList.toggle('on',v==='table');
+  document.getElementById('kbtn').classList.toggle('on',v==='kanban');
+  if(v==='kanban')renderKanban();
+}
+
+// ── FOCUS ──
+function renderFocus(){
+  const list=document.getElementById('focus-list');if(!list)return;
+  const items=getData('focus');
+  list.innerHTML='';
+  items.forEach((txt,i)=>{
+    const div=document.createElement('div');div.className='focus-item';
+    const dot=document.createElement('span');dot.className='fdot';dot.textContent='▸';
+    const inp=document.createElement('input');inp.type='text';inp.className='focus-inp';inp.value=txt;inp.placeholder='Add focus item...';
+    inp.addEventListener('input',()=>{const d=getData('focus');d[i]=inp.value;lsSet('focus',d);});
+    const del=document.createElement('button');del.className='focus-del';del.textContent='×';
+    del.onclick=()=>{const d=getData('focus');d.splice(i,1);lsSet('focus',d);renderFocus();};
+    div.appendChild(dot);div.appendChild(inp);div.appendChild(del);list.appendChild(div);
+  });
+}
+function addFocus(){
+  const d=getData('focus');d.push('');lsSet('focus',d);renderFocus();
+  const inputs=document.querySelectorAll('.focus-inp');
+  if(inputs.length)inputs[inputs.length-1].focus();
+}
+
+// ── ROADMAP ──
+function renderRoadmap(){
+  const c=document.getElementById('roadmap-content');if(!c)return;
+  const d=getData('roadmap');
+  const makeSection=(key,checkKey,label,full)=>{
+    const div=document.createElement('div');div.className='roadmap-section';
+    const h3=document.createElement('h3');h3.textContent=label;div.appendChild(h3);
+    (d[key]||[]).forEach((txt,i)=>{
+      const item=document.createElement('div');item.className='roadmap-item';
+      const box=document.createElement('div');box.className='rcheck'+(d[checkKey][i]?' done':'');
+      if(d[checkKey][i])box.textContent='✓';
+      box.onclick=()=>{d[checkKey][i]=!d[checkKey][i];box.classList.toggle('done',d[checkKey][i]);box.textContent=d[checkKey][i]?'✓':'';lsSet('roadmap',d);};
+      const inp=document.createElement('input');inp.type='text';inp.className='rinp';inp.value=txt;
+      inp.addEventListener('input',()=>{d[key][i]=inp.value;lsSet('roadmap',d);});
+      const del=document.createElement('button');del.className='focus-del';del.textContent='×';
+      del.onclick=()=>{d[key].splice(i,1);d[checkKey].splice(i,1);lsSet('roadmap',d);renderRoadmap();};
+      item.appendChild(box);item.appendChild(inp);item.appendChild(del);div.appendChild(item);
+    });
+    const btn=document.createElement('button');btn.className='add-btn';btn.textContent='＋ Add item';
+    btn.onclick=()=>{d[key].push('');d[checkKey].push(false);lsSet('roadmap',d);renderRoadmap();};
+    div.appendChild(btn);
+    return div;
+  };
+  c.innerHTML='';
+  c.appendChild(makeSection('goals','goalsCheck','🎯 Month Goals',true));
+  const grid=document.createElement('div');grid.className='grid-2';
+  [['core','coreCheck','🛠️ Core Systems'],['content','contentCheck','🏙️ Content'],['economy','economyCheck','💰 Economy'],['rp','rpCheck','🎭 RP Systems']].forEach(([k,ck,l])=>grid.appendChild(makeSection(k,ck,l)));
+  c.appendChild(grid);
+}
+
+// ── NOTES (contenteditable) ──
+function saveNote(el){
+  const key=el.dataset.key;if(!key)return;
+  lsSet('note_'+key,el.innerText);
+}
+function loadNotes(){
+  document.querySelectorAll('[data-key]').forEach(el=>{
+    const v=lsGet('note_'+el.dataset.key);
+    if(v!==null)el.innerText=v;
+  });
+}
+
+// ── SUGGESTIONS ──
+function getSuggestions(){return lsGet('suggestions')||[];}
+function saveSuggestions(d){lsSet('suggestions',d);}
+
+function submitSuggestion(){
+  const name=document.getElementById('sug-name').value.trim();
+  const text=document.getElementById('sug-text').value.trim();
+  if(!text){document.getElementById('sug-text').focus();return;}
+  const sugs=getSuggestions();
+  sugs.unshift({id:Date.now(),author:name||'Anonymous',text,date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),highlighted:false});
+  saveSuggestions(sugs);
+  document.getElementById('sug-name').value='';
+  document.getElementById('sug-text').value='';
+  renderSuggestions();
+}
+
+function toggleHighlight(id){
+  const sugs=getSuggestions();
+  const s=sugs.find(x=>x.id===id);
+  if(s)s.highlighted=!s.highlighted;
+  saveSuggestions(sugs);
+  renderSuggestions();
+}
+
+function deleteSuggestion(id){
+  const sugs=getSuggestions().filter(x=>x.id!==id);
+  saveSuggestions(sugs);
+  renderSuggestions();
+}
+
+function renderSuggestions(){
+  const sugs=getSuggestions();
+  const hlGrid=document.getElementById('hl-grid');
+  const hlSection=document.getElementById('hl-section');
+  const list=document.getElementById('sug-list');
+  if(!hlGrid||!list)return;
+
+  const highlighted=sugs.filter(s=>s.highlighted);
+  const all=sugs;
+
+  // Highlighted cards
+  hlGrid.innerHTML='';
+  highlighted.forEach(s=>{
+    const card=document.createElement('div');card.className='sug-card-hl';
+    card.innerHTML=`
+      <span class="hl-star">⭐</span>
+      <div class="hl-author">${esc(s.author)}</div>
+      <div class="hl-text">${esc(s.text)}</div>
+      <button class="hl-remove" onclick="toggleHighlight(${s.id})">Remove highlight</button>
+    `;
+    hlGrid.appendChild(card);
+  });
+  hlSection.style.display=highlighted.length?'':'none';
+
+  // All suggestions list
+  list.innerHTML='';
+  if(!all.length){
+    list.innerHTML='<div class="empty-msg"><div class="ei">💡</div>No suggestions yet. Be the first!</div>';
+    return;
+  }
+  all.forEach(s=>{
+    const card=document.createElement('div');
+    card.className='sug-card'+(s.highlighted?' is-hl':'');
+    card.innerHTML=`
+      <div class="sug-card-body">
+        <div class="sug-card-author">${esc(s.author)}</div>
+        <div class="sug-card-text">${esc(s.text)}</div>
+        <div class="sug-card-date">${s.date}</div>
+      </div>
+      <div class="sug-card-btns">
+        <button class="hl-btn${s.highlighted?' on':''}" title="${s.highlighted?'Remove highlight':'Highlight this suggestion'}" onclick="toggleHighlight(${s.id})">⭐</button>
+        <button class="sug-del-btn" title="Delete" onclick="deleteSuggestion(${s.id})">×</button>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+function esc(str){
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Enter key on suggestion inputs
+document.addEventListener('DOMContentLoaded',()=>{
+  ['sug-name','sug-text'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.addEventListener('keydown',e=>{if(e.key==='Enter')submitSuggestion();});
+  });
+});
+
+// ── NAV ──
+function go(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{if(n.getAttribute('onclick')===`go('${page}')`)n.classList.add('active');});
+  document.getElementById('main').scrollTo(0,0);
+  if(page==='suggestions')renderSuggestions();
+}
+
+// ── INIT ──
+window.addEventListener('DOMContentLoaded',()=>{
+  Object.keys(SCHEMAS).forEach(k=>renderTable(k));
+  renderFocus();
+  renderRoadmap();
+  loadNotes();
+  renderSuggestions();
+});
+</script>
+</body>
+</html>
