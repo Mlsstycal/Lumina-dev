@@ -444,7 +444,7 @@ const JSONBIN_KEY = '$2a$10$Gi.YqjXiyS2OE8/BYLF6fO.uomf5wwVo9CznNBGr8uQLBt8pEm6K
 let CLOUD = {};
 let _saveTimer = null;
 let _cloudEnabled = !!(JSONBIN_ID && JSONBIN_KEY);
-const BIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_ID}`;
+<meta http-equiv="Content-Security-Policy" content="connect-src *;">
 
 async function loadCloud() {
   if (!_cloudEnabled) return false;
