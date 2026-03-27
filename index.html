@@ -115,6 +115,13 @@ tr:hover .del-btn{opacity:0.5;}
 code{font-family:'JetBrains Mono',monospace;font-size:11px;background:rgba(124,58,237,0.15);color:var(--neon);padding:2px 7px;border-radius:4px;border:1px solid rgba(168,85,247,0.2);}
 #toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--accent);color:var(--neon);font-size:12px;padding:10px 16px;border-radius:8px;font-family:'JetBrains Mono',monospace;z-index:9999;opacity:0;transform:translateY(8px);transition:all 0.25s;pointer-events:none;}
 #toast.show{opacity:1;transform:translateY(0);}
+#loading-overlay{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:99999;flex-direction:column;gap:16px;}
+#loading-overlay.hidden{display:none;}
+.loading-spinner{width:32px;height:32px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted2);}
+#setup-banner{background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.3);border-radius:8px;padding:14px 18px;margin-bottom:20px;font-size:12px;color:var(--gold);font-family:'JetBrains Mono',monospace;display:none;}
+#setup-banner a{color:var(--cyan);text-decoration:underline;}
 ::-webkit-scrollbar{width:6px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
@@ -154,6 +161,18 @@ code{font-family:'JetBrains Mono',monospace;font-size:11px;background:rgba(124,5
 </style>
 </head>
 <body>
+
+<!-- ═══════════════════════════════════════════════
+     SETUP: Replace BIN_ID and API_KEY below with
+     your JSONBin.io credentials (see README at top
+     of script section)
+═══════════════════════════════════════════════ -->
+
+<div id="loading-overlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Connecting to shared database...</div>
+</div>
+
 <div id="selectPopup"></div>
 <div id="toast">Saved ✓</div>
 
@@ -177,7 +196,7 @@ code{font-family:'JetBrains Mono',monospace;font-size:11px;background:rgba(124,5
   <div class="nav-section-label">Dev Tools</div>
   <div class="nav-item" onclick="go('luminadev')"><span class="icon">🧪</span>LuminaDEV</div>
   <div class="nav-item" onclick="go('suggestions')"><span class="icon">💡</span>Suggestions</div>
-  <div class="sidebar-footer">v1.0 · Lumina RP Team</div>
+  <div class="sidebar-footer">v2.0 · Shared · Lumina RP Team</div>
 </nav>
 
 <main id="main">
@@ -186,6 +205,7 @@ code{font-family:'JetBrains Mono',monospace;font-size:11px;background:rgba(124,5
 <div id="page-hub" class="page active">
   <div class="page-header"><div class="page-emoji">🏠</div><div class="page-title">Lumina RP Dev Hub</div><div class="page-desc">Central command for the development team — stay organized, ship better.</div></div>
   <div class="content">
+    <div id="setup-banner">⚠️ Running in offline mode — data is saved locally only. To enable shared storage for the whole team, see setup instructions in the HTML file.</div>
     <div class="section-label">Quick Links</div>
     <div class="quick-links">
       <div class="ql-btn" onclick="go('tasks')">✅ Weekly Tasks</div>
@@ -371,47 +391,131 @@ Steam hex required</div></div>
   </div>
 </div>
 
-
-
-
-
 <!-- SUGGESTIONS -->
 <div id="page-suggestions" class="page">
   <div class="page-header"><div class="page-emoji">💡</div><div class="page-title">Suggestions</div><div class="page-desc">Drop an idea. Star the ones worth building. Highlighted suggestions float to the top.</div></div>
   <div class="content">
-
-    <!-- SUBMIT FORM -->
     <div class="sug-form">
       <div class="sug-form-title">＋ Submit a Suggestion</div>
       <div class="sug-fields">
-        <div class="sug-col">
-          <div class="sug-field-label">Your Name</div>
-          <input id="sug-name" class="sug-input" type="text" placeholder="e.g. Reaper" maxlength="32"/>
-        </div>
-        <div class="sug-col">
-          <div class="sug-field-label">Suggestion</div>
-          <input id="sug-text" class="sug-input" type="text" placeholder="Describe your idea..." maxlength="280"/>
-        </div>
+        <div class="sug-col"><div class="sug-field-label">Your Name</div><input id="sug-name" class="sug-input" type="text" placeholder="e.g. Reaper" maxlength="32"/></div>
+        <div class="sug-col"><div class="sug-field-label">Suggestion</div><input id="sug-text" class="sug-input" type="text" placeholder="Describe your idea..." maxlength="280"/></div>
         <button class="sug-submit" onclick="submitSuggestion()">Submit</button>
       </div>
     </div>
-
-    <!-- HIGHLIGHTED -->
     <div id="hl-section" style="display:none;margin-bottom:32px;">
       <div class="section-label">⭐ Highlighted Suggestions</div>
       <div class="highlighted-grid" id="hl-grid"></div>
     </div>
-
-    <!-- ALL SUGGESTIONS -->
     <div class="section-label">All Suggestions</div>
     <div class="sug-list" id="sug-list"></div>
-
   </div>
 </div>
 
 </main>
 
 <script>
+/*
+════════════════════════════════════════════════════════
+  LUMINA RP DEV HUB v2.0 — SHARED STORAGE SETUP
+════════════════════════════════════════════════════════
+
+  HOW TO ENABLE SHARED STORAGE (takes 2 minutes):
+
+  1. Go to https://jsonbin.io and create a free account
+  2. Click "API Keys" → create a new key → copy it
+  3. Click "New Bin" → paste this as the content:
+        {}
+     Click "Create Bin" → copy the Bin ID from the URL
+  4. Paste both values below:
+
+════════════════════════════════════════════════════════
+*/
+const JSONBIN_ID  = '69c706ae99b15f1d78364b4e';
+const JSONBIN_KEY = '$2a$10$Gi.YqjXiyS2OE8/BYLF6fO.uomf5wwVo9CznNBGr8uQLBt8pEm6K6';
+/*
+════════════════════════════════════════════════════════
+  That's it! Upload this file to GitHub and deploy.
+  Everyone on the team will see the same data.
+════════════════════════════════════════════════════════
+*/
+
+// ── CLOUD STORAGE ──
+let CLOUD = {};
+let _saveTimer = null;
+let _cloudEnabled = !!(JSONBIN_ID && JSONBIN_KEY);
+const BIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_ID}`;
+
+async function loadCloud() {
+  if (!_cloudEnabled) return false;
+  try {
+    const r = await fetch(BIN_URL + '/latest', {
+      headers: { 'X-Master-Key': JSONBIN_KEY, 'X-Bin-Meta': 'false' }
+    });
+    if (!r.ok) throw new Error('fetch failed');
+    CLOUD = await r.json();
+    return true;
+  } catch(e) {
+    console.warn('JSONBin load failed, using localStorage:', e);
+    _cloudEnabled = false;
+    return false;
+  }
+}
+
+function scheduleCloudSave() {
+  if (!_cloudEnabled) return;
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(async () => {
+    try {
+      await fetch(BIN_URL, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Master-Key': JSONBIN_KEY
+        },
+        body: JSON.stringify(CLOUD)
+      });
+    } catch(e) {
+      console.warn('JSONBin save failed:', e);
+    }
+  }, 1500);
+}
+
+// ── LOCAL FALLBACK ──
+function lsRaw(k) { try { return localStorage.getItem('lrp_'+k); } catch(e) { return null; } }
+function lsWrite(k, v) { try { localStorage.setItem('lrp_'+k, JSON.stringify(v)); } catch(e) {} }
+
+function lsGet(k) {
+  if (_cloudEnabled) return CLOUD[k] !== undefined ? CLOUD[k] : null;
+  try { const v = lsRaw(k); return v ? JSON.parse(v) : null; } catch(e) { return null; }
+}
+
+function lsSet(k, v) {
+  lsWrite(k, v); // always keep local backup
+  if (_cloudEnabled) {
+    CLOUD[k] = v;
+    scheduleCloudSave();
+  }
+  toast();
+}
+
+// Migrate localStorage to cloud on first shared load
+function migrateLocalToCloud() {
+  if (!_cloudEnabled || Object.keys(CLOUD).length > 0) return;
+  let migrated = false;
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith('lrp_')) {
+      const k = key.replace('lrp_', '');
+      try { CLOUD[k] = JSON.parse(localStorage.getItem(key)); migrated = true; } catch(e) {}
+    }
+  }
+  if (migrated) {
+    scheduleCloudSave();
+    console.log('Migrated localStorage to cloud ✓');
+  }
+}
+
 // ── BADGE CONFIG ──
 const OPTS={
   status_hub:[{l:'Working',c:'bg'},{l:'In Progress',c:'by'},{l:'Bugged',c:'br'},{l:'Planned',c:'bb'}],
@@ -499,46 +603,59 @@ const SCHEMAS={
     {k:'staff',label:'Staff Roles',type:'text'},
     {k:'status',label:'Status',type:'select',opts:'biz_status'},
   ],
-  deps:[
-    {k:'system',label:'System',type:'text',first:true},
-    {k:'deps',label:'Depends On',type:'text'},
-    {k:'notes',label:'Notes',type:'text'},
-  ],
 };
+
+// ── YOUR REAL DATA (pre-populated from screenshots) ──
 const DEFAULTS={
   hub:[
-    {system:'New Player Flow',status:'In Progress',priority:'High',assigned:'Dev Team',notes:'Respawn bug on first join'},
-    {system:'QS Systems',status:'Bugged',priority:'High',assigned:'',notes:'Instability in qb-core bridge'},
     {system:'Vehicle Shop',status:'In Progress',priority:'Medium',assigned:'',notes:'Full rebuild underway'},
-    {system:'MDT System',status:'Working',priority:'Low',assigned:'',notes:'Stable'},
-    {system:'Drug Crafting',status:'Working',priority:'Medium',assigned:'',notes:'Needs item check'},
-    {system:'Robbery System',status:'In Progress',priority:'High',assigned:'',notes:'Documenting all active robberies'},
+    {system:'MDT System, police, and ambulance job configuration',status:'Planned',priority:'Low',assigned:'',notes:'Stable, (e) to get out of bed stays, and need to configured beds and such at new hospital'},
+    {system:'Drug Crafting',status:'In Progress',priority:'High',assigned:'',notes:'Purchased the new script need to install, and set up.'},
+    {system:'Robbery System',status:'In Progress',priority:'High',assigned:'',notes:'Documenting all active robberies, testing, and editing as needed.'},
+    {system:'hotwiring system reported to be too hard nurf it',status:'Working',priority:'Low',assigned:'',notes:''},
+    {system:'add a functioning pawn shop',status:'Planned',priority:'High',assigned:'',notes:''},
+    {system:'drugs',status:'Working',priority:'High',assigned:'',notes:'changes all levels to 0 not sure how to get the levels up'},
+    {system:'crafting stations',status:'Working',priority:'High',assigned:'',notes:''},
+    {system:'rental boats!!',status:'Working',priority:'High',assigned:'',notes:''},
   ],
   tasks:[
-    {task:'Fix player spawn bug',status:'In Progress',priority:'High',category:'RP Systems',assigned:'',due:'',notes:'Happens on first join'},
-    {task:'Rebuild vehicle shop UI',status:'To Do',priority:'Medium',category:'Vehicles',assigned:'',due:'',notes:'New layout planned'},
-    {task:'Update loading screen',status:'To Do',priority:'Low',category:'UI',assigned:'',due:'',notes:'Volume issue to fix'},
-    {task:'Document robbery systems',status:'In Progress',priority:'High',category:'RP Systems',assigned:'',due:'',notes:'All active ones'},
-    {task:'QS bridge stability',status:'In Progress',priority:'High',category:'Scripts',assigned:'',due:'',notes:''},
     {task:'Item audit (crafting/shop/loot)',status:'To Do',priority:'Medium',category:'Economy',assigned:'',due:'',notes:'Check all items exist'},
-    {task:'MDT improvements',status:'Done',priority:'Low',category:'RP Systems',assigned:'',due:'',notes:'Stable & shipped'},
+    {task:'fix crime sql for ipl and find warehouse shells',status:'To Do',priority:'High',category:'UI',assigned:'',due:'',notes:''},
+    {task:'updated all of the pushes from quasar this weekend, housing, crime, vehshop, multi character, and mining scripts',status:'Done',priority:'Low',category:'Scripts',assigned:'',due:'',notes:''},
   ],
   patches:[
-    {title:'v1.2 — MDT Upgrade',date:'2025-07-14',type:'Addition',desc:'New MDT system with improved search and warrant system'},
-    {title:'v1.1 — Economy Patch',date:'2025-07-07',type:'Change',desc:'Adjusted drug sell prices and job payouts'},
-    {title:'v1.0.3 — Spawn Fix',date:'2025-07-01',type:'Fix',desc:'Fixed duplicate spawn on server rejoin'},
-    {title:'v1.0 — Launch',date:'2025-06-20',type:'Addition',desc:'Lumina RP goes live'},
+    {title:'Server Update Fixes Deployed',date:'2026-03-20',type:'Addition',desc:'Phone install update, yacht configuration, test, and showcase, radial menu build, test, and bug fix.'},
+    {title:'LUMINA UPDATE: FOR THE CHRONICALLY LOST',date:'2026-03-20',type:'Addition',desc:'added way-point system, tested, and announced'},
+    {title:'Controller keybinds',date:'2026-03-20',type:'Fix',desc:'fixed the controller keybinds with a custom new script (controller)'},
+    {title:'weekend fixes',date:'',type:'Fix',desc:'phone props, hands up is now x up double x down, shop clerks now panic run or fight back, Controller driving + keybinds fixed'},
   ],
   changelog:[
-    {date:'2025-07-14',system:'MDT',change:'Added warrant system UI',file:'mdt/client.lua',notes:'Tested on LuminaDEV ✓'},
-    {date:'2025-07-13',system:'QS Bridge',change:'Patched null ref crash',file:'qs-core/shared.lua',notes:'Still monitoring'},
-    {date:'2025-07-10',system:'Vehicle Shop',change:'Removed old qs-vehicleshop',file:'qs-vehicleshop/',notes:'Replaced with custom'},
+    {date:'2026-07-21',system:'qs-apartments re-install',change:'Patched null ref crash',file:'qs-apartments',notes:'Still monitoring'},
+    {date:'2026-03-20',system:'Vehicle Shop',change:'Removed old qs-vehicleshop',file:'qsvehicleshop/',notes:'Replaced with new script'},
+    {date:'03-25-2026',system:'uploaded a script to get rid of all radios',change:'',file:'cr-stopmusic',notes:'uploaded to standalone'},
   ],
   bugs:[
-    {name:'Spawn duplicate on rejoin',severity:'High',status:'Fixing',assigned:'',desc:'Player spawns twice on reconnect',steps:'Disconnect & reconnect',notes:'Spawn logic conflict'},
-    {name:'QS null reference crash',severity:'High',status:'Fixing',assigned:'',desc:'Server crashes on QS bridge call',steps:'Open vehicle shop',notes:'Monitoring'},
-    {name:'Loading screen audio loops',severity:'Medium',status:'Open',assigned:'',desc:'Volume resets to 100% on loop',steps:'Wait for 2nd loop',notes:''},
-    {name:'Drug sell NPC missing',severity:'Medium',status:'Fixed',assigned:'',desc:'NPC not spawning at south location',steps:'Go to drug sell point S',notes:'Ped coords fixed'},
+    {name:'Map location list wont scroll the whole list',severity:'High',status:'Open',assigned:'',desc:'',steps:'',notes:''},
+    {name:'waypoints on phone job center are wrong',severity:'High',status:'Fixed',assigned:'',desc:'',steps:'',notes:'deleted app'},
+    {name:'take the change clothing off of the buty jobs',severity:'High',status:'Fixed',assigned:'',desc:'',steps:'',notes:''},
+    {name:'work on super Jesus or get rid of him',severity:'High',status:'Open',assigned:'',desc:'',steps:'',notes:''},
+    {name:'Fix cash delivery (items work, cash inconsistent)',severity:'High',status:'Open',assigned:'',desc:'',steps:'',notes:''},
+    {name:'Fix minigolf (E interaction not working)',severity:'Low',status:'Fixed',assigned:'',desc:'',steps:'',notes:''},
+    {name:'Fix cigarettes: play smoking animation reduce stress properly',severity:'Low',status:'Fixing',assigned:'',desc:'',steps:'',notes:''},
+    {name:'change cameras for qs-apartments',severity:'Medium',status:'Open',assigned:'',desc:'',steps:'',notes:''},
+    {name:'SCRIPT ERROR: @qs-vehicleshop/client/custom/drawtext/automatic.lua:24: table index is nil',severity:'Low',status:'Fixed',assigned:'',desc:'',steps:'',notes:'edited file so that it safely handles missing ids and also makes sure delete uses the same resolved id.'},
+    {name:'clerks are fighting back too hard, not dying',severity:'Low',status:'Fixed',assigned:'',desc:'',steps:'',notes:'and the chances of fightback is lower, lowered its armor, and working on the running logic so he doesn\'t run in place behind the counter'},
+    {name:'inventory not having skill tree photos',severity:'High',status:'Fixing',assigned:'',desc:'',steps:'',notes:'opened a ticket with quasar its missing the icons meant for the skilltree, i tried the old images from the old script but it didnt work probably due to the ui script i cant edit'},
+    {name:'can search the same trashcan over and over',severity:'Low',status:'Fixed',assigned:'',desc:'',steps:'',notes:'added a 300 sec cooldown'},
+    {name:'blips for dig den not showing up',severity:'Low',status:'Fixed',assigned:'',desc:'',steps:'',notes:'there was no closing bracket after ammo shops fixed!'},
+    {name:'hands up',severity:'Low',status:'Fixed',assigned:'',desc:'',steps:'',notes:''},
+    {name:'phone invisible',severity:'Low',status:'Fixed',assigned:'',desc:'',steps:'',notes:''},
+    {name:'controller keybinds',severity:'Low',status:'Fixed',assigned:'',desc:'',steps:'',notes:''},
+    {name:'double animations on consumable items',severity:'Low',status:'Fixed',assigned:'',desc:'',steps:'',notes:''},
+    {name:'dev site not saving',severity:'High',status:'Open',assigned:'',desc:'',steps:'',notes:''},
+    {name:'delete music from cars',severity:'Low',status:'Fixed',assigned:'',desc:'',steps:'',notes:''},
+    {name:'weed not giving effects',severity:'Low',status:'Fixed',assigned:'',desc:'',steps:'',notes:''},
+    {name:'trucking job didnt pay and still changes clothes',severity:'High',status:'Open',assigned:'',desc:'',steps:'',notes:''},
   ],
   commands:[
     {cmd:'/handsup',cat:'Player',desc:'Put hands up'},
@@ -557,23 +674,15 @@ const DEFAULTS={
     {name:'Paleto Bank',loc:'Paleto Bay',items:'C4, Hack Device',sources:'Crafting / Loot',reward:'$80,000+',diff:'Hard',status:'In Progress',steps:'TBD'},
   ],
   gangs:[
-    {name:'The Bloods',territory:'South LS',income:'Drugs, Robbery',activities:'Drug trade, turf wars',reqs:'3 members min',status:'Active'},
-    {name:'Los Santos Cartel',territory:'East LS',income:'Drugs, Arms',activities:'Trafficking, protection',reqs:'5 members min',status:'Active'},
+    {name:'',territory:'',income:'',activities:'',reqs:'',status:'Active'},
   ],
   businesses:[
-    {name:'Lumina Auto',owner:'',income:'Vehicle sales',items:'Car listings',staff:'Salesman, Manager',status:'Open'},
-    {name:'Eclipse Bar',owner:'',income:'Drink sales',items:'Alcohol, Mixers',staff:'Bartender, Bouncer',status:'Open'},
+    {name:'',owner:'',income:'',items:'',staff:'',status:'Open'},
   ],
-  deps:[
-    {system:'qs-vehicleshop',deps:'vehicles table, qb-core',notes:'Breaking vehicles table breaks shop completely'},
-    {system:'qs-housing',deps:'apartments, player_houses',notes:'Wipe apartments table = all houses lost'},
-    {system:'drug-system',deps:'items table, crafting',notes:'All drug items must exist in items table'},
-    {system:'banking',deps:'player_accounts, economy',notes:'Core dependency — do NOT touch without full backup'},
-  ],
-  focus:['Fix new player flow','Stabilize QS systems','Rebuild vehicle shop','Document all active robbery systems','Audit item existence across crafting / shops / loot'],
+  focus:['Rebuild vehicle shop','Document all active robbery systems','Audit item existence across crafting / shops / loot'],
   roadmap:{
-    goals:['Stabilize core server systems for consistent uptime','Document all robbery systems in the tracker','Complete vehicle shop rebuild','Full item audit across all systems','Fix new player onboarding flow'],
-    goalsCheck:[false,true,false,false,false],
+    goals:['Stabilize core server systems for consistent uptime','Document all robbery systems in the tracker','Complete vehicle shop rebuild','Full item audit across all systems','Fix new player onboarding flow','Install new drug system (already purchased)','Find and install fi...'],
+    goalsCheck:[false,false,false,false,false,false,false],
     core:['QS system stabilization','Player spawn fix','MDT polish','System dependency map'],
     coreCheck:[false,false,true,false],
     content:['New gang territories','2 new businesses','Loading screen refresh','UI overhaul (HUD)'],
@@ -585,20 +694,23 @@ const DEFAULTS={
   }
 };
 
-// ── STORAGE ──
 const CACHE={};
-function lsGet(k){if(CACHE[k]!==undefined)return CACHE[k];try{const v=localStorage.getItem('lrp_'+k);CACHE[k]=v?JSON.parse(v):null;return CACHE[k];}catch(e){return null;}}
-function lsSet(k,v){CACHE[k]=v;try{localStorage.setItem('lrp_'+k,JSON.stringify(v));}catch(e){}toast();}
-function getData(k){if(!CACHE[k]){const s=lsGet(k);CACHE[k]=s?s:JSON.parse(JSON.stringify(DEFAULTS[k]||[]));}return CACHE[k];}
+function getData(k){
+  if(CACHE[k]!==undefined)return CACHE[k];
+  const s=lsGet(k);
+  CACHE[k]=s?s:JSON.parse(JSON.stringify(DEFAULTS[k]||[]));
+  return CACHE[k];
+}
+function setData(k,v){CACHE[k]=v;lsSet(k,v);}
 
 // ── TOAST ──
 let _tt;
 function toast(){const t=document.getElementById('toast');t.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),1600);}
 
 // ── SELECT POPUP ──
-let _sc=null,_so=null;
+let _sc=null;
 function openSel(el,optsKey){
-  _sc=el;_so=optsKey;
+  _sc=el;
   const popup=document.getElementById('selectPopup');
   const opts=OPTS[optsKey]||[];
   popup.innerHTML='';
@@ -606,7 +718,7 @@ function openSel(el,optsKey){
     const d=document.createElement('div');
     d.className='select-opt';
     d.innerHTML=`<span class="badge ${o.c}" style="pointer-events:none">${o.l}</span>`;
-    d.onclick=()=>{pickSel(o);};
+    d.onclick=()=>pickSel(o,optsKey);
     popup.appendChild(d);
   });
   const r=el.getBoundingClientRect();
@@ -614,7 +726,7 @@ function openSel(el,optsKey){
   popup.style.left=r.left+'px';
   popup.style.display='block';
 }
-function pickSel(o){
+function pickSel(o,optsKey){
   if(!_sc)return;
   _sc.className='badge '+o.c;
   _sc.textContent=o.l;
@@ -631,8 +743,7 @@ document.addEventListener('click',e=>{
 function syncFromBadge(badge){
   const tr=badge.closest('tr');if(!tr)return;
   const tbody=tr.closest('tbody');if(!tbody)return;
-  const key=tbody.dataset.key;
-  if(!key)return;
+  const key=tbody.dataset.key;if(!key)return;
   const schema=SCHEMAS[key];
   const rows=getData(key);
   const idx=parseInt(tr.dataset.idx);
@@ -642,7 +753,7 @@ function syncFromBadge(badge){
     if(col.type==='select'){const b=td.querySelector('.badge');if(b)rows[idx][col.k]=b.dataset.val||b.textContent;}
     else{const s=td.querySelector('.editable');if(s)rows[idx][col.k]=s.textContent;}
   });
-  lsSet(key,rows);
+  setData(key,rows);
   if(key==='tasks')renderKanban();
 }
 
@@ -660,7 +771,7 @@ function renderTable(key){
 function makeRow(key,schema,row,idx){
   const tr=document.createElement('tr');
   tr.dataset.idx=idx;
-  schema.forEach((col,ci)=>{
+  schema.forEach((col)=>{
     const td=document.createElement('td');
     if(col.first)td.className='fn';
     if(col.type==='select'){
@@ -688,7 +799,7 @@ function makeRow(key,schema,row,idx){
   const btn=document.createElement('button');
   btn.className='del-btn';btn.textContent='×';btn.title='Delete row';
   btn.onclick=()=>{
-    const rows=getData(key);rows.splice(parseInt(tr.dataset.idx),1);lsSet(key,rows);
+    const rows=getData(key);rows.splice(parseInt(tr.dataset.idx),1);setData(key,rows);
     renderTable(key);
     if(key==='tasks')renderKanban();
   };
@@ -704,7 +815,7 @@ function syncRow(key,schema,tr,idx){
     if(col.type==='select'){const b=td.querySelector('.badge');if(b)rows[idx][col.k]=b.dataset.val||b.textContent;}
     else{const s=td.querySelector('.editable');if(s)rows[idx][col.k]=s.textContent;}
   });
-  lsSet(key,rows);
+  setData(key,rows);
   if(key==='tasks')renderKanban();
 }
 
@@ -712,10 +823,8 @@ function addRow(key){
   const schema=SCHEMAS[key];
   const rows=getData(key);
   const blank={};
-  schema.forEach(col=>{
-    blank[col.k]=col.type==='select'?(OPTS[col.opts]&&OPTS[col.opts][0]?OPTS[col.opts][0].l:''):'';
-  });
-  rows.push(blank);lsSet(key,rows);
+  schema.forEach(col=>{blank[col.k]=col.type==='select'?(OPTS[col.opts]&&OPTS[col.opts][0]?OPTS[col.opts][0].l:''):'';});
+  rows.push(blank);setData(key,rows);
   const tbody=document.getElementById(key+'-body');
   tbody.appendChild(makeRow(key,schema,blank,rows.length-1));
   const newTr=tbody.lastElementChild;
@@ -766,14 +875,14 @@ function renderFocus(){
     const div=document.createElement('div');div.className='focus-item';
     const dot=document.createElement('span');dot.className='fdot';dot.textContent='▸';
     const inp=document.createElement('input');inp.type='text';inp.className='focus-inp';inp.value=txt;inp.placeholder='Add focus item...';
-    inp.addEventListener('input',()=>{const d=getData('focus');d[i]=inp.value;lsSet('focus',d);});
+    inp.addEventListener('input',()=>{const d=getData('focus');d[i]=inp.value;setData('focus',d);});
     const del=document.createElement('button');del.className='focus-del';del.textContent='×';
-    del.onclick=()=>{const d=getData('focus');d.splice(i,1);lsSet('focus',d);renderFocus();};
+    del.onclick=()=>{const d=getData('focus');d.splice(i,1);setData('focus',d);renderFocus();};
     div.appendChild(dot);div.appendChild(inp);div.appendChild(del);list.appendChild(div);
   });
 }
 function addFocus(){
-  const d=getData('focus');d.push('');lsSet('focus',d);renderFocus();
+  const d=getData('focus');d.push('');setData('focus',d);renderFocus();
   const inputs=document.querySelectorAll('.focus-inp');
   if(inputs.length)inputs[inputs.length-1].focus();
 }
@@ -782,47 +891,51 @@ function addFocus(){
 function renderRoadmap(){
   const c=document.getElementById('roadmap-content');if(!c)return;
   const d=getData('roadmap');
-  const makeSection=(key,checkKey,label,full)=>{
+  const makeSection=(key,checkKey,label)=>{
     const div=document.createElement('div');div.className='roadmap-section';
     const h3=document.createElement('h3');h3.textContent=label;div.appendChild(h3);
     (d[key]||[]).forEach((txt,i)=>{
       const item=document.createElement('div');item.className='roadmap-item';
       const box=document.createElement('div');box.className='rcheck'+(d[checkKey][i]?' done':'');
       if(d[checkKey][i])box.textContent='✓';
-      box.onclick=()=>{d[checkKey][i]=!d[checkKey][i];box.classList.toggle('done',d[checkKey][i]);box.textContent=d[checkKey][i]?'✓':'';lsSet('roadmap',d);};
+      box.onclick=()=>{d[checkKey][i]=!d[checkKey][i];box.classList.toggle('done',d[checkKey][i]);box.textContent=d[checkKey][i]?'✓':'';setData('roadmap',d);};
       const inp=document.createElement('input');inp.type='text';inp.className='rinp';inp.value=txt;
-      inp.addEventListener('input',()=>{d[key][i]=inp.value;lsSet('roadmap',d);});
+      inp.addEventListener('input',()=>{d[key][i]=inp.value;setData('roadmap',d);});
       const del=document.createElement('button');del.className='focus-del';del.textContent='×';
-      del.onclick=()=>{d[key].splice(i,1);d[checkKey].splice(i,1);lsSet('roadmap',d);renderRoadmap();};
+      del.onclick=()=>{d[key].splice(i,1);d[checkKey].splice(i,1);setData('roadmap',d);renderRoadmap();};
       item.appendChild(box);item.appendChild(inp);item.appendChild(del);div.appendChild(item);
     });
     const btn=document.createElement('button');btn.className='add-btn';btn.textContent='＋ Add item';
-    btn.onclick=()=>{d[key].push('');d[checkKey].push(false);lsSet('roadmap',d);renderRoadmap();};
+    btn.onclick=()=>{d[key].push('');d[checkKey].push(false);setData('roadmap',d);renderRoadmap();};
     div.appendChild(btn);
     return div;
   };
   c.innerHTML='';
-  c.appendChild(makeSection('goals','goalsCheck','🎯 Month Goals',true));
+  c.appendChild(makeSection('goals','goalsCheck','🎯 Month Goals'));
   const grid=document.createElement('div');grid.className='grid-2';
   [['core','coreCheck','🛠️ Core Systems'],['content','contentCheck','🏙️ Content'],['economy','economyCheck','💰 Economy'],['rp','rpCheck','🎭 RP Systems']].forEach(([k,ck,l])=>grid.appendChild(makeSection(k,ck,l)));
   c.appendChild(grid);
 }
 
-// ── NOTES (contenteditable) ──
+// ── NOTES ──
 function saveNote(el){
   const key=el.dataset.key;if(!key)return;
-  lsSet('note_'+key,el.innerText);
+  const v=el.innerText;
+  if(_cloudEnabled){CLOUD['note_'+key]=v;scheduleCloudSave();}
+  lsWrite('note_'+key,v);
+  toast();
 }
 function loadNotes(){
   document.querySelectorAll('[data-key]').forEach(el=>{
-    const v=lsGet('note_'+el.dataset.key);
-    if(v!==null)el.innerText=v;
+    const k='note_'+el.dataset.key;
+    const v=_cloudEnabled?(CLOUD[k]!==undefined?CLOUD[k]:null):lsGet(k);
+    if(v!==null&&v!==undefined)el.innerText=v;
   });
 }
 
 // ── SUGGESTIONS ──
 function getSuggestions(){return lsGet('suggestions')||[];}
-function saveSuggestions(d){lsSet('suggestions',d);}
+function saveSuggestions(d){setData('suggestions',d);}
 
 function submitSuggestion(){
   const name=document.getElementById('sug-name').value.trim();
@@ -856,59 +969,28 @@ function renderSuggestions(){
   const hlSection=document.getElementById('hl-section');
   const list=document.getElementById('sug-list');
   if(!hlGrid||!list)return;
-
   const highlighted=sugs.filter(s=>s.highlighted);
-  const all=sugs;
-
-  // Highlighted cards
   hlGrid.innerHTML='';
   highlighted.forEach(s=>{
     const card=document.createElement('div');card.className='sug-card-hl';
-    card.innerHTML=`
-      <span class="hl-star">⭐</span>
-      <div class="hl-author">${esc(s.author)}</div>
-      <div class="hl-text">${esc(s.text)}</div>
-      <button class="hl-remove" onclick="toggleHighlight(${s.id})">Remove highlight</button>
-    `;
+    card.innerHTML=`<span class="hl-star">⭐</span><div class="hl-author">${esc(s.author)}</div><div class="hl-text">${esc(s.text)}</div><button class="hl-remove" onclick="toggleHighlight(${s.id})">Remove highlight</button>`;
     hlGrid.appendChild(card);
   });
   hlSection.style.display=highlighted.length?'':'none';
-
-  // All suggestions list
   list.innerHTML='';
-  if(!all.length){
+  if(!sugs.length){
     list.innerHTML='<div class="empty-msg"><div class="ei">💡</div>No suggestions yet. Be the first!</div>';
     return;
   }
-  all.forEach(s=>{
+  sugs.forEach(s=>{
     const card=document.createElement('div');
     card.className='sug-card'+(s.highlighted?' is-hl':'');
-    card.innerHTML=`
-      <div class="sug-card-body">
-        <div class="sug-card-author">${esc(s.author)}</div>
-        <div class="sug-card-text">${esc(s.text)}</div>
-        <div class="sug-card-date">${s.date}</div>
-      </div>
-      <div class="sug-card-btns">
-        <button class="hl-btn${s.highlighted?' on':''}" title="${s.highlighted?'Remove highlight':'Highlight this suggestion'}" onclick="toggleHighlight(${s.id})">⭐</button>
-        <button class="sug-del-btn" title="Delete" onclick="deleteSuggestion(${s.id})">×</button>
-      </div>
-    `;
+    card.innerHTML=`<div class="sug-card-body"><div class="sug-card-author">${esc(s.author)}</div><div class="sug-card-text">${esc(s.text)}</div><div class="sug-card-date">${s.date}</div></div><div class="sug-card-btns"><button class="hl-btn${s.highlighted?' on':''}" title="${s.highlighted?'Remove highlight':'Highlight'}" onclick="toggleHighlight(${s.id})">⭐</button><button class="sug-del-btn" title="Delete" onclick="deleteSuggestion(${s.id})">×</button></div>`;
     list.appendChild(card);
   });
 }
 
-function esc(str){
-  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// Enter key on suggestion inputs
-document.addEventListener('DOMContentLoaded',()=>{
-  ['sug-name','sug-text'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el)el.addEventListener('keydown',e=>{if(e.key==='Enter')submitSuggestion();});
-  });
-});
+function esc(str){return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 // ── NAV ──
 function go(page){
@@ -921,12 +1003,42 @@ function go(page){
 }
 
 // ── INIT ──
-window.addEventListener('DOMContentLoaded',()=>{
+window.addEventListener('DOMContentLoaded', async () => {
+  // Setup suggestion key listeners
+  ['sug-name','sug-text'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.addEventListener('keydown',e=>{if(e.key==='Enter')submitSuggestion();});
+  });
+
+  // Load from cloud if configured
+  if (_cloudEnabled) {
+    const ok = await loadCloud();
+    if (ok) {
+      // First time: migrate localStorage data to cloud
+      migrateLocalToCloud();
+    } else {
+      // Cloud failed — show offline banner
+      document.getElementById('setup-banner').style.display = 'block';
+    }
+  } else {
+    // No config — show setup banner
+    document.getElementById('setup-banner').style.display = 'block';
+  }
+
+  // Sync CACHE from cloud data
+  if (_cloudEnabled) {
+    Object.keys(CLOUD).forEach(k => { CACHE[k] = CLOUD[k]; });
+  }
+
+  // Render everything
   Object.keys(SCHEMAS).forEach(k=>renderTable(k));
   renderFocus();
   renderRoadmap();
   loadNotes();
   renderSuggestions();
+
+  // Hide loading overlay
+  document.getElementById('loading-overlay').classList.add('hidden');
 });
 </script>
 </body>
